@@ -1,62 +1,287 @@
-<div class="tool-container">
-    <h2>🔍 JSON Diff Viewer</h2>
+<div class="json-diff-container">
+    <!-- Compact Control Bar -->
+    <div class="control-bar">
+        <div class="bar-left">
+            <h2 class="app-title">JSON Diff</h2>
 
-    <div class="dual-editor">
-        <div class="editor-section">
-            <div class="editor-header">
-                <h3>Left JSON</h3>
-                <button (click)="loadSample()" class="btn-secondary">Load Sample</button>
+            <div class="view-toggles">
+                <button [class.active]="viewMode() === 'split'" (click)="hasResults() && toggleViewMode('split')"
+                    [disabled]="!hasResults()" class="icon-toggle" title="Split View">
+                    <span>⚡</span>
+                </button>
+                <button [class.active]="viewMode() === 'tree'" (click)="hasResults() && toggleViewMode('tree')"
+                    [disabled]="!hasResults()" class="icon-toggle" title="Tree View">
+                    <span>🌳</span>
+                </button>
+                <button [class.active]="viewMode() === 'raw'" (click)="hasResults() && toggleViewMode('raw')"
+                    [disabled]="!hasResults()" class="icon-toggle" title="Raw Diff">
+                    <span>📄</span>
+                </button>
             </div>
-            <textarea [(ngModel)]="leftJson" placeholder="Paste first JSON here..." class="json-editor"
-                rows="12"></textarea>
+
+            <div class="search-compact">
+                <span class="search-icon">🔍</span>
+                <input type="text" [(ngModel)]="searchQuery" (input)="searchInJson()" placeholder="Search..."
+                    class="search-input-compact">
+                @if (hasSearch()) {
+                <div class="search-actions">
+                    <span class="count">{{ currentSearchIndex() + 1 }}/{{ searchResults().length }}</span>
+                    <button (click)="previousSearchResult()">↑</button>
+                    <button (click)="nextSearchResult()">↓</button>
+                    <button (click)="clearSearch()">✕</button>
+                </div>
+                }
+            </div>
         </div>
 
-        <div class="swap-button-container">
-            <button (click)="swapSides()" class="btn-icon" title="Swap sides">
-                ↔️
+        <div class="bar-right">
+            <button (click)="loadSample()" class="text-btn">Sample</button>
+            <button (click)="clearAll()" class="text-btn">Clear</button>
+
+            <div class="vr"></div>
+
+            @if (!isEditing()) {
+            <button (click)="enterEditMode()" class="primary-action-btn">
+                <span>✏️ Edit</span>
             </button>
-        </div>
+            } @else {
+            <button (click)="compareJson()" class="primary-action-btn">
+                <span>🔍 Compare</span>
+            </button>
+            }
 
-        <div class="editor-section">
-            <div class="editor-header">
-                <h3>Right JSON</h3>
-                <button (click)="clearAll()" class="btn-secondary">Clear All</button>
+            <div class="vr"></div>
+
+            <!-- Copy Menu -->
+            <div class="dropdown">
+                <button class="icon-btn-large" title="Copy Options">
+                    <span>📋</span> <span class="btn-label">Copy</span> ▼
+                </button>
+                <div class="dropdown-menu right">
+                    <button (click)="copyLeft()" class="dropdown-item">Copy Left</button>
+                    <button (click)="copyRight()" class="dropdown-item">Copy Right</button>
+                    <button (click)="copyDiff()" class="dropdown-item" [disabled]="!hasResults()">Copy Diff</button>
+                </div>
             </div>
-            <textarea [(ngModel)]="rightJson" placeholder="Paste second JSON here..." class="json-editor"
-                rows="12"></textarea>
+
+            <!-- Download Menu -->
+            <div class="dropdown">
+                <button class="icon-btn-large" title="Download Options">
+                    <span>💾</span> <span class="btn-label">Save</span> ▼
+                </button>
+                <div class="dropdown-menu right">
+                    <button (click)="downloadLeft()" class="dropdown-item">Download Left</button>
+                    <button (click)="downloadRight()" class="dropdown-item">Download Right</button>
+                    <button (click)="downloadDiff()" class="dropdown-item" [disabled]="!hasResults()">Save Diff</button>
+                    <button (click)="downloadComparison()" class="dropdown-item" [disabled]="!hasResults()">Save
+                        Report</button>
+                </div>
+            </div>
         </div>
     </div>
 
-    <div class="actions">
-        <button (click)="compareDiff()" class="btn-primary">🔍 Compare</button>
-        <button (click)="applyPatch()" class="btn-secondary" [disabled]="!diffResult()">→ Apply Patch</button>
-        <button (click)="reversePatch()" class="btn-secondary" [disabled]="!diffResult()">← Reverse Patch</button>
-    </div>
+    <!-- Copy Feedback (Toast) -->
+    @if (copyFeedback()) {
+    <div class="copy-feedback">{{ copyFeedback() }}</div>
+    }
 
+    <!-- Error Message -->
     @if (error()) {
     <div class="error-message">
-        {{ error() }}
+        <span class="error-icon">⚠️</span> {{ error() }}
     </div>
     }
 
-    @if (diffStats().added > 0 || diffStats().removed > 0 || diffStats().modified > 0) {
-    <div class="stats">
-        <span class="stat-added">➕ Added: {{ diffStats().added }}</span>
-        <span class="stat-removed">➖ Removed: {{ diffStats().removed }}</span>
-        <span class="stat-modified">✏️ Modified: {{ diffStats().modified }}</span>
-    </div>
-    }
-
-    @if (diffResult()) {
-    <div class="editor-section">
-        <div class="editor-header">
+    <!-- Raw Diff Result Section (Shown ONLY when viewMode is 'raw' and has results) -->
+    @if (hasResults() && viewMode() === 'raw') {
+    <div class="diff-result-section maximized">
+        <div class="result-header">
             <h3>Diff Result (JSON Patch Format)</h3>
-            <div class="button-group">
-                <button (click)="copyDiff()" class="btn-secondary">📋 Copy</button>
-                <button (click)="downloadDiff()" class="btn-secondary">💾 Download</button>
+            <div class="result-actions">
+                <button (click)="copyDiff()" class="action-btn">
+                    <span class="icon">📋</span> Copy
+                </button>
+                <button (click)="downloadDiff()" class="action-btn">
+                    <span class="icon">💾</span> Download
+                </button>
             </div>
         </div>
-        <pre class="json-output"><code>{{ diffResult() }}</code></pre>
+        <pre class="diff-output"><code>{{ diffResult() }}</code></pre>
+    </div>
+    } @else {
+    <!-- Main Comparison Area (For Split, Tree, and Edit modes) -->
+    <div class="comparison-area">
+        <!-- Left Editor -->
+        <div class="editor-panel" [class.invalid]="!leftValid()">
+            <div class="panel-header">
+                <div class="panel-title">
+                    <h3>Left JSON</h3>
+                    <span class="size-badge">{{ leftSize() }}</span>
+                    @if (leftValid()) {
+                    <span class="valid-badge">✓ Valid</span>
+                    } @else {
+                    <span class="invalid-badge">✗ Invalid</span>
+                    }
+                </div>
+                <div class="panel-actions">
+                    <label class="file-upload-btn">
+                        <span class="icon">📁</span> Upload
+                        <input type="file" accept=".json" (change)="onLeftFileSelect($event)" hidden>
+                    </label>
+                    <button (click)="formatLeft()" class="icon-btn" title="Format">✨</button>
+                    <button (click)="minifyLeft()" class="icon-btn" title="Minify">⚡</button>
+                </div>
+            </div>
+
+            @if (viewMode() === 'tree' && leftTree().length > 0 && hasResults()) {
+            <div class="tree-view">
+                @for (node of leftTree(); track node.path) {
+                <div class="tree-node" [class]="'diff-' + node.diffType">
+                    <div class="tree-node-content" (click)="toggleNode(node)">
+                        @if (node.children && node.children.length > 0) {
+                        <span class="expand-icon">{{ node.expanded ? '▼' : '▶' }}</span>
+                        }
+                        <span class="node-key">{{ node.key }}</span>
+                        <span class="node-type">{{ node.type }}</span>
+                        @if (node.type !== 'object' && node.type !== 'array') {
+                        <span class="node-value">{{ node.value }}</span>
+                        }
+                    </div>
+                    @if (node.expanded && node.children) {
+                    <div class="tree-children">
+                        @for (child of node.children; track child.path) {
+                        <div class="tree-node" [class]="'diff-' + child.diffType">
+                            <div class="tree-node-content">
+                                <span class="node-key">{{ child.key }}</span>
+                                <span class="node-type">{{ child.type }}</span>
+                                @if (child.type !== 'object' && child.type !== 'array') {
+                                <span class="node-value">{{ child.value }}</span>
+                                }
+                            </div>
+                        </div>
+                        }
+                    </div>
+                    }
+                </div>
+                }
+            </div>
+            } @else if (viewMode() === 'split' && hasResults()) {
+            <div class="code-diff-view">
+                @for (line of leftDiffLines(); track $index) {
+                <div class="code-line" [class]="line.type">
+                    <span class="line-number">{{ line.lineNum || '' }}</span>
+                    <span class="line-content">{{ line.text }}</span>
+                </div>
+                }
+            </div>
+            } @else {
+            <textarea [(ngModel)]="leftJson" placeholder="Paste or upload JSON here..." class="json-editor"
+                [class.error]="!leftValid()" spellcheck="false" rows="20"></textarea>
+            }
+        </div>
+
+        <!-- Center stats or spacer -->
+        @if (hasResults()) {
+        <div class="center-gutter">
+            <div class="stat-badge added" title="Added">+{{ diffStats().added }}</div>
+            <div class="stat-badge removed" title="Removed">-{{ diffStats().removed }}</div>
+            <div class="stat-badge modified" title="Modified">~{{ diffStats().modified }}</div>
+        </div>
+        } @else {
+        <div class="center-gutter empty"></div>
+        }
+
+        <!-- Right Editor -->
+        <div class="editor-panel" [class.invalid]="!rightValid()">
+            <div class="panel-header">
+                <div class="panel-title">
+                    <h3>Right JSON</h3>
+                    <span class="size-badge">{{ rightSize() }}</span>
+                    @if (rightValid()) {
+                    <span class="valid-badge">✓ Valid</span>
+                    } @else {
+                    <span class="invalid-badge">✗ Invalid</span>
+                    }
+                </div>
+                <div class="panel-actions">
+                    <label class="file-upload-btn">
+                        <span class="icon">📁</span> Upload
+                        <input type="file" accept=".json" (change)="onRightFileSelect($event)" hidden>
+                    </label>
+                    <button (click)="formatRight()" class="icon-btn" title="Format">✨</button>
+                    <button (click)="minifyRight()" class="icon-btn" title="Minify">⚡</button>
+                </div>
+            </div>
+
+            @if (viewMode() === 'tree' && rightTree().length > 0 && hasResults()) {
+            <div class="tree-view">
+                @for (node of rightTree(); track node.path) {
+                <div class="tree-node" [class]="'diff-' + node.diffType">
+                    <div class="tree-node-content" (click)="toggleNode(node)">
+                        @if (node.children && node.children.length > 0) {
+                        <span class="expand-icon">{{ node.expanded ? '▼' : '▶' }}</span>
+                        }
+                        <span class="node-key">{{ node.key }}</span>
+                        <span class="node-type">{{ node.type }}</span>
+                        @if (node.type !== 'object' && node.type !== 'array') {
+                        <span class="node-value">{{ node.value }}</span>
+                        }
+                    </div>
+                    @if (node.expanded && node.children) {
+                    <div class="tree-children">
+                        @for (child of node.children; track child.path) {
+                        <div class="tree-node" [class]="'diff-' + child.diffType">
+                            <div class="tree-node-content">
+                                <span class="node-key">{{ child.key }}</span>
+                                <span class="node-type">{{ child.type }}</span>
+                                @if (child.type !== 'object' && child.type !== 'array') {
+                                <span class="node-value">{{ child.value }}</span>
+                                }
+                            </div>
+                        </div>
+                        }
+                    </div>
+                    }
+                </div>
+                }
+            </div>
+            } @else if (viewMode() === 'split' && hasResults()) {
+            <div class="code-diff-view">
+                @for (line of rightDiffLines(); track $index) {
+                <div class="code-line" [class]="line.type">
+                    <span class="line-number">{{ line.lineNum || '' }}</span>
+                    <span class="line-content">{{ line.text }}</span>
+                </div>
+                }
+            </div>
+            } @else {
+            <textarea [(ngModel)]="rightJson" placeholder="Paste or upload JSON here..." class="json-editor"
+                [class.error]="!rightValid()" spellcheck="false" rows="20"></textarea>
+            }
+        </div>
     </div>
     }
+
+    <!-- Format Options (collapsible) -->
+    <details class="format-options">
+        <summary>⚙️ Format Options</summary>
+        <div class="options-content">
+            <label class="option-item">
+                <span>Indent Size:</span>
+                <input type="number" [(ngModel)]="indentSize" min="0" max="8" class="indent-input">
+            </label>
+            <label class="option-item checkbox">
+                <input type="checkbox" [(ngModel)]="sortKeys">
+                <span>Sort Keys Alphabetically</span>
+            </label>
+            <label class="option-item checkbox">
+                <input type="checkbox" [ngModel]="showOnlyDifferences()" (ngModelChange)="toggleOnlyDifferences()">
+                <span>Show Only Differences</span>
+            </label>
+            <label class="option-item checkbox">
+                <input type="checkbox" [ngModel]="syncScroll()" (ngModelChange)="toggleSyncScroll()">
+                <span>Sync Scroll</span>
+            </label>
+        </div>
+    </details>
 </div>

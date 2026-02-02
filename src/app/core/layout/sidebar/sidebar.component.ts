@@ -21,11 +21,27 @@ interface NavItem {
             <a
               [routerLink]="item.route"
               routerLinkActive="active"
+              [routerLinkActiveOptions]="{ exact: !item.children }"
               class="nav-item"
             >
               <span class="nav-icon">{{ item.icon }}</span>
               <span class="nav-label">{{ item.label }}</span>
             </a>
+
+            @if (item.children) {
+              <div class="nav-children">
+                @for (child of item.children; track child.route) {
+                  <a
+                    [routerLink]="child.route"
+                    routerLinkActive="active"
+                    class="nav-child-item"
+                  >
+                    <span class="nav-icon">{{ child.icon }}</span>
+                    <span class="nav-label">{{ child.label }}</span>
+                  </a>
+                }
+              </div>
+            }
           </div>
         }
       </nav>
@@ -88,6 +104,39 @@ interface NavItem {
       flex: 1;
     }
 
+    .nav-children {
+      background: rgba(0, 0, 0, 0.02);
+      border-left: 2px solid var(--primary);
+      margin-left: 1.5rem;
+    }
+
+    .nav-child-item {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.625rem 1.5rem;
+      padding-left: 2rem;
+      color: var(--text-secondary);
+      text-decoration: none;
+      transition: all 0.2s;
+      font-size: 0.9rem;
+    }
+
+    .nav-child-item:hover {
+      background: var(--hover);
+      color: var(--text);
+    }
+
+    .nav-child-item.active {
+      background: var(--primary-bg);
+      color: var(--primary);
+      font-weight: 500;
+    }
+
+    .nav-child-item .nav-icon {
+      font-size: 1rem;
+    }
+
     @media (max-width: 768px) {
       .sidebar {
         position: fixed;
@@ -120,7 +169,17 @@ export class SidebarComponent {
 
   navItems: NavItem[] = [
     { icon: '🔐', label: 'Crypto Tools', route: '/crypto' },
-    { icon: '📝', label: 'JSON Tools', route: '/json-tools' },
+    {
+      icon: '📝',
+      label: 'JSON Tools',
+      route: '/json-tools',
+      children: [
+        { icon: '✨', label: 'Formatter', route: '/json-tools/formatter' },
+        { icon: '🔍', label: 'Diff Viewer', route: '/json-tools/diff' },
+        { icon: '✓', label: 'Validator', route: '/json-tools/validator' },
+        { icon: '📊', label: 'CSV Converter', route: '/json-tools/csv-converter' }
+      ]
+    },
     { icon: '📄', label: 'Text Tools', route: '/text-tools' },
     { icon: '🔒', label: 'Secure Files', route: '/secure-files' },
     { icon: '⚙️', label: 'Settings', route: '/settings' }
