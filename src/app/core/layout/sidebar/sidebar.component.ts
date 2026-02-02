@@ -3,29 +3,19 @@ import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 
 interface NavItem {
-    icon: string;
-    label: string;
-    route: string;
-    children?: NavItem[];
+  icon: string;
+  label: string;
+  route: string;
+  children?: NavItem[];
 }
 
 @Component({
-    selector: 'app-sidebar',
-    standalone: true,
-    imports: [CommonModule, RouterModule],
-    template: `
+  selector: 'app-sidebar',
+  standalone: true,
+  imports: [CommonModule, RouterModule],
+  template: `
     <aside class="sidebar" [class.collapsed]="!isOpen()">
       <nav class="sidebar-nav">
-        <a
-          routerLink="/dashboard"
-          routerLinkActive="active"
-          class="nav-item"
-          [class.exact]="true"
-        >
-          <span class="nav-icon">📊</span>
-          <span class="nav-label">Dashboard</span>
-        </a>
-
         @for (item of navItems; track item.route) {
           <div class="nav-section">
             <a
@@ -41,7 +31,7 @@ interface NavItem {
       </nav>
     </aside>
   `,
-    styles: [`
+  styles: [`
     .sidebar {
       background: var(--surface);
       border-right: 1px solid var(--border);
@@ -126,14 +116,13 @@ interface NavItem {
   `]
 })
 export class SidebarComponent {
-    isOpen = input<boolean>(true);
+  isOpen = input<boolean>(true);
 
-    navItems: NavItem[] = [
-        { icon: '🔐', label: 'Crypto Tools', route: '/crypto' },
-        { icon: '📝', label: 'JSON Tools', route: '/json-tools' },
-        { icon: '📄', label: 'Text Tools', route: '/text-tools' },
-        { icon: '📁', label: 'File Utilities', route: '/file-utilities' },
-        { icon: '🖼️', label: 'Image Tools', route: '/image-tools' },
-        { icon: '⚙️', label: 'Settings', route: '/settings' }
-    ];
+  navItems: NavItem[] = [
+    { icon: '🔐', label: 'Crypto Tools', route: '/crypto' },
+    { icon: '📝', label: 'JSON Tools', route: '/json-tools' },
+    { icon: '📄', label: 'Text Tools', route: '/text-tools' },
+    { icon: '🔒', label: 'Secure Files', route: '/secure-files' },
+    { icon: '⚙️', label: 'Settings', route: '/settings' }
+  ];
 }

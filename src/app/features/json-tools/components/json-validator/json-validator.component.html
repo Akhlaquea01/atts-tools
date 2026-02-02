@@ -1,0 +1,45 @@
+<div class="tool-container">
+    <h2>✅ JSON Validator</h2>
+
+    <div class="dual-editor">
+        <div class="editor-section">
+            <div class="editor-header">
+                <h3>JSON Data</h3>
+                <button (click)="loadSampleJson()" class="btn-secondary">Load Sample</button>
+            </div>
+            <textarea [(ngModel)]="jsonInput" placeholder="Paste your JSON here..." class="json-editor"
+                rows="12"></textarea>
+        </div>
+
+        <div class="editor-section">
+            <div class="editor-header">
+                <h3>JSON Schema (Optional)</h3>
+                <div class="button-group">
+                    <button (click)="loadTemplate('user')" class="btn-xs">User</button>
+                    <button (click)="loadTemplate('config')" class="btn-xs">Config</button>
+                </div>
+            </div>
+            <textarea [(ngModel)]="schemaInput"
+                placeholder="Paste JSON Schema or leave empty for syntax validation only..." class="json-editor"
+                rows="12"></textarea>
+        </div>
+    </div>
+
+    <div class="actions">
+        <button (click)="validateJson()" class="btn-primary">✓ Validate</button>
+        <button (click)="generateSchema()" class="btn-secondary">📋 Generate Schema from JSON</button>
+        <button (click)="clearAll()" class="btn-secondary">Clear All</button>
+    </div>
+
+    @if (error()) {
+    <div class="error-message">
+        {{ error() }}
+    </div>
+    }
+
+    @if (validationResult()) {
+    <div class="validation-result" [class.valid]="isValid()" [class.invalid]="!isValid()">
+        <pre>{{ validationResult() }}</pre>
+    </div>
+    }
+</div>

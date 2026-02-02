@@ -1,0 +1,184 @@
+<div class="vault-container">
+    <h2>🔒 Secure File Vault</h2>
+    <p class="subtitle">Encrypt and protect your files with password-based AES-256 encryption</p>
+
+    <div class="mode-tabs">
+        <button [class.active]="mode() === 'encrypt'" (click)="mode.set('encrypt')" class="tab-btn">
+            🔐 Encrypt & Protect
+        </button>
+        <button [class.active]="mode() === 'decrypt'" (click)="mode.set('decrypt')" class="tab-btn">
+            🔓 Decrypt & Restore
+        </button>
+    </div>
+
+    @if (error()) {
+    <div class="error-message">
+        ⚠️ {{ error() }}
+    </div>
+    }
+
+    <!-- ENCRYPT MODE -->
+    @if (mode() === 'encrypt') {
+    <div class="panel">
+        <div class="section">
+            <h3>1. Select File</h3>
+            <div class="file-upload">
+                <input type="file" (change)="onFileSelect($event)" id="fileInput" #fileInput>
+                <label for="fileInput" class="upload-label">
+                    @if (selectedFile()) {
+                    <div class="file-info">
+                        <div class="file-icon">📄</div>
+                        <div>
+                            <strong>{{ selectedFile()!.name }}</strong>
+                            <div class="file-size">{{ formatSize(selectedFile()!.size) }}</div>
+                        </div>
+                    </div>
+                    } @else {
+                    <div class="upload-placeholder">
+                        <div class="upload-icon">📁</div>
+                        <p><strong>Click to browse</strong> or drag and drop</p>
+                        <p class="text-muted">Any file type supported</p>
+                    </div>
+                    }
+                </label>
+            </div>
+        </div>
+
+        @if (selectedFile()) {
+        <div class="section">
+            <h3>2. Compression</h3>
+            <label class="checkbox-label">
+                <input type="checkbox" [(ngModel)]="useCompression">
+                <span>Compress file before encryption (recommended for large files)</span>
+            </label>
+        </div>
+
+        <div class="section">
+            <h3>3. Set Password</h3>
+            <div class="password-inputs">
+                <input type="password" [(ngModel)]="password" placeholder="Enter password (min 6 characters)"
+                    class="password-input">
+                <input type="password" [(ngModel)]="confirmPassword" placeholder="Confirm password"
+                    class="password-input">
+            </div>
+            <p class="password-hint">⚠️ Remember this password - it cannot be recovered!</p>
+        </div>
+
+        <div class="actions">
+            <button (click)="encryptFile()" [disabled]="encrypting() || !password() || !confirmPassword()"
+                class="btn-primary">
+                @if (encrypting()) {
+                ⏳ Encrypting...
+                } @else {
+                🔐 Encrypt File
+                }
+            </button>
+            <button (click)="clearEncrypt()" class="btn-secondary">Clear</button>
+        </div>
+
+        @if (encryptedData()) {
+        <div class="result">
+            <h3>✅ Encryption Successful!</h3>
+            <div class="stats-grid">
+                <div class="stat">
+                    <div class="stat-label">Original Size</div>
+                    <div class="stat-value">{{ formatSize(originalSize()) }}</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-label">Encrypted Size</div>
+                    <div class="stat-value">{{ formatSize(processedSize()) }}</div>
+                </div>
+                @if (useCompression()) {
+                <div class="stat">
+                    <div class="stat-label">Saved</div>
+                    <div class="stat-value">{{ getCompressionRatio() }}%</div>
+                </div>
+                }
+            </div>
+            <button (click)="downloadEncrypted()" class="btn-download">
+                💾 Download Encrypted File (.secure)
+            </button>
+        </div>
+        }
+        }
+    </div>
+    }
+
+    <!-- DECRYPT MODE -->
+    @if (mode() === 'decrypt') {
+    <div class="panel">
+        <div class="section">
+            <h3>1. Select Encrypted File</h3>
+            <div class="file-upload">
+                <input type="file" accept=".secure" (change)="onEncryptedFileSelect($event)" id="encryptedFileInput"
+                    #encryptedFileInput>
+                <label for="encryptedFileInput" class="upload-label">
+                    @if (encryptedFile()) {
+                    <div class="file-info">
+                        <div class="file-icon">🔒</div>
+                        <div>
+                            <strong>{{ encryptedFile()!.name }}</strong>
+                            <div class="file-size">{{ formatSize(encryptedFile()!.size) }}</div>
+                        </div>
+                    </div>
+                    } @else {
+                    <div class="upload-placeholder">
+                        <div class="upload-icon">🔒</div>
+                        <p><strong>Click to browse</strong> or drag and drop</p>
+                        <p class="text-muted">Select .secure file to decrypt</p>
+                    </div>
+                    }
+                </label>
+            </div>
+        </div>
+
+        @if (encryptedFile()) {
+        <div class="section">
+            <h3>2. Enter Password</h3>
+            <input type="password" [(ngModel)]="decryptPassword" placeholder="Enter decryption password"
+                class="password-input">
+        </div>
+
+        <div class="actions">
+            <button (click)="decryptFile()" [disabled]="decrypting() || !decryptPassword()" class="btn-primary">
+                @if (decrypting()) {
+                ⏳ Decrypting...
+                } @else {
+                🔓 Decrypt File
+                }
+            </button>
+            <button (click)="clearDecrypt()" class="btn-secondary">Clear</button>
+        </div>
+
+        @if (decryptedData()) {
+        <div class="result success">
+            <h3>✅ Decryption Successful!</h3>
+            <div class="stats-grid">
+                <div class="stat">
+                    <div class="stat-label">Original Filename</div>
+                    <div class="stat-value filename">{{ decryptedFilename() }}</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-label">Restored Size</div>
+                    <div class="stat-value">{{ formatSize(processedSize()) }}</div>
+                </div>
+            </div>
+            <button (click)="downloadDecrypted()" class="btn-download">
+                💾 Download Original File
+            </button>
+        </div>
+        }
+        }
+    </div>
+    }
+
+    <div class="info-panel">
+        <h4>ℹ️ How It Works</h4>
+        <ul>
+            <li><strong>Encryption:</strong> Uses AES-256 encryption standard</li>
+            <li><strong>Compression:</strong> Optional gzip compression to reduce file size</li>
+            <li><strong>Privacy:</strong> All processing happens in your browser - no uploads</li>
+            <li><strong>Security:</strong> Only you have the password - keep it safe!</li>
+        </ul>
+    </div>
+</div>

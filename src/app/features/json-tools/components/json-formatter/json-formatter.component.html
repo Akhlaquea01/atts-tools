@@ -1,0 +1,55 @@
+<div class="tool-container">
+  <h2>📝 JSON Formatter & Validator</h2>
+
+  <div class="editor-section">
+    <div class="editor-header">
+      <h3>Input JSON</h3>
+      <div class="button-group">
+        <button (click)="loadSample()" class="btn-secondary">Load Sample</button>
+        <button (click)="clearAll()" class="btn-secondary">Clear All</button>
+      </div>
+    </div>
+    <textarea
+      [(ngModel)]="inputJson"
+      placeholder="Paste your JSON here..."
+      class="json-editor"
+      rows="12"
+    ></textarea>
+  </div>
+
+  <div class="actions">
+    <button (click)="formatJson()" class="btn-primary">✨ Format</button>
+    <button (click)="minifyJson()" class="btn-primary">📦 Minify</button>
+    <button (click)="validateJson()" class="btn-primary">✓ Validate</button>
+    <button (click)="sortKeys()" class="btn-primary">🔤 Sort Keys</button>
+    <button (click)="escapeJson()" class="btn-secondary">Escape</button>
+    <button (click)="unescapeJson()" class="btn-secondary">Unescape</button>
+  </div>
+
+  @if (error()) {
+    <div class="error-message" [class.success]="isValid()">
+      {{ error() }}
+    </div>
+  }
+
+  @if (stats().size > 0) {
+    <div class="stats">
+      <span>📊 Keys: {{ stats().keys }}</span>
+      <span>📏 Depth: {{ stats().depth }}</span>
+      <span>💾 Size: {{ stats().size }} bytes</span>
+    </div>
+  }
+
+  @if (outputJson()) {
+    <div class="editor-section">
+      <div class="editor-header">
+        <h3>Output</h3>
+        <div class="button-group">
+          <button (click)="copyToClipboard()" class="btn-secondary">📋 Copy</button>
+          <button (click)="downloadJson()" class="btn-secondary">💾 Download</button>
+        </div>
+      </div>
+      <pre class="json-output"><code>{{ outputJson() }}</code></pre>
+    </div>
+  }
+</div>

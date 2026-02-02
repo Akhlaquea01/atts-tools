@@ -3,12 +3,8 @@ import { Routes } from '@angular/router';
 export const routes: Routes = [
     {
         path: '',
-        redirectTo: '/dashboard',
+        redirectTo: '/crypto',
         pathMatch: 'full'
-    },
-    {
-        path: 'dashboard',
-        loadComponent: () => import('./features/dashboard/dashboard.component').then(m => m.DashboardComponent)
     },
     {
         path: 'crypto',
@@ -23,12 +19,8 @@ export const routes: Routes = [
         loadChildren: () => import('./features/text-tools/text-tools.routes').then(m => m.TEXT_TOOLS_ROUTES)
     },
     {
-        path: 'file-utilities',
-        loadChildren: () => import('./features/file-utilities/file-utilities.routes').then(m => m.FILE_UTILITIES_ROUTES)
-    },
-    {
-        path: 'image-tools',
-        loadChildren: () => import('./features/image-tools/image-tools.routes').then(m => m.IMAGE_TOOLS_ROUTES)
+        path: 'secure-files',
+        loadChildren: () => import('./features/secure-files/secure-files.routes').then(m => m.SECURE_FILES_ROUTES)
     },
     {
         path: 'settings',
@@ -36,6 +28,6 @@ export const routes: Routes = [
     },
     {
         path: '**',
-        redirectTo: '/dashboard'
+        redirectTo: '/crypto'
     }
 ];

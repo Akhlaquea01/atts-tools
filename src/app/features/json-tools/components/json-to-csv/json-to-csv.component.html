@@ -1,0 +1,63 @@
+<div class="tool-container">
+    <h2>🔄 {{ mode() === 'json-to-csv' ? 'JSON to CSV' : 'CSV to JSON' }} Converter</h2>
+
+    <div class="mode-toggle">
+        <button (click)="toggleMode()" class="btn-secondary">
+            🔄 Switch to {{ mode() === 'json-to-csv' ? 'CSV to JSON' : 'JSON to CSV' }}
+        </button>
+    </div>
+
+    <div class="options">
+        <label>
+            <span>Delimiter:</span>
+            <select [(ngModel)]="delimiter" class="select-input">
+                <option value=",">Comma (,)</option>
+                <option value=";">Semicolon (;)</option>
+                <option value="\t">Tab (\t)</option>
+                <option value="|">Pipe (|)</option>
+            </select>
+        </label>
+        <label class="checkbox-label">
+            <input type="checkbox" [(ngModel)]="includeHeaders">
+            <span>{{ mode() === 'json-to-csv' ? 'Include Headers' : 'First Row is Header' }}</span>
+        </label>
+    </div>
+
+    <div class="editor-section">
+        <div class="editor-header">
+            <h3>Input {{ mode() === 'json-to-csv' ? 'JSON' : 'CSV' }}</h3>
+            <div class="button-group">
+                <button (click)="loadSample()" class="btn-secondary">Load Sample</button>
+                <button (click)="clearAll()" class="btn-secondary">Clear All</button>
+            </div>
+        </div>
+        <textarea [(ngModel)]="inputText"
+            [placeholder]="'Paste your ' + (mode() === 'json-to-csv' ? 'JSON' : 'CSV') + ' here...'" class="json-editor"
+            rows="12"></textarea>
+    </div>
+
+    <div class="actions">
+        <button (click)="convert()" class="btn-primary">
+            🔄 Convert to {{ mode() === 'json-to-csv' ? 'CSV' : 'JSON' }}
+        </button>
+    </div>
+
+    @if (error()) {
+    <div class="error-message">
+        {{ error() }}
+    </div>
+    }
+
+    @if (outputText()) {
+    <div class="editor-section">
+        <div class="editor-header">
+            <h3>Output {{ mode() === 'json-to-csv' ? 'CSV' : 'JSON' }}</h3>
+            <div class="button-group">
+                <button (click)="copyToClipboard()" class="btn-secondary">📋 Copy</button>
+                <button (click)="downloadFile()" class="btn-secondary">💾 Download</button>
+            </div>
+        </div>
+        <pre class="json-output"><code>{{ outputText() }}</code></pre>
+    </div>
+    }
+</div>

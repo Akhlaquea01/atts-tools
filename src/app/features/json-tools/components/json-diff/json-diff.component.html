@@ -1,0 +1,62 @@
+<div class="tool-container">
+    <h2>🔍 JSON Diff Viewer</h2>
+
+    <div class="dual-editor">
+        <div class="editor-section">
+            <div class="editor-header">
+                <h3>Left JSON</h3>
+                <button (click)="loadSample()" class="btn-secondary">Load Sample</button>
+            </div>
+            <textarea [(ngModel)]="leftJson" placeholder="Paste first JSON here..." class="json-editor"
+                rows="12"></textarea>
+        </div>
+
+        <div class="swap-button-container">
+            <button (click)="swapSides()" class="btn-icon" title="Swap sides">
+                ↔️
+            </button>
+        </div>
+
+        <div class="editor-section">
+            <div class="editor-header">
+                <h3>Right JSON</h3>
+                <button (click)="clearAll()" class="btn-secondary">Clear All</button>
+            </div>
+            <textarea [(ngModel)]="rightJson" placeholder="Paste second JSON here..." class="json-editor"
+                rows="12"></textarea>
+        </div>
+    </div>
+
+    <div class="actions">
+        <button (click)="compareDiff()" class="btn-primary">🔍 Compare</button>
+        <button (click)="applyPatch()" class="btn-secondary" [disabled]="!diffResult()">→ Apply Patch</button>
+        <button (click)="reversePatch()" class="btn-secondary" [disabled]="!diffResult()">← Reverse Patch</button>
+    </div>
+
+    @if (error()) {
+    <div class="error-message">
+        {{ error() }}
+    </div>
+    }
+
+    @if (diffStats().added > 0 || diffStats().removed > 0 || diffStats().modified > 0) {
+    <div class="stats">
+        <span class="stat-added">➕ Added: {{ diffStats().added }}</span>
+        <span class="stat-removed">➖ Removed: {{ diffStats().removed }}</span>
+        <span class="stat-modified">✏️ Modified: {{ diffStats().modified }}</span>
+    </div>
+    }
+
+    @if (diffResult()) {
+    <div class="editor-section">
+        <div class="editor-header">
+            <h3>Diff Result (JSON Patch Format)</h3>
+            <div class="button-group">
+                <button (click)="copyDiff()" class="btn-secondary">📋 Copy</button>
+                <button (click)="downloadDiff()" class="btn-secondary">💾 Download</button>
+            </div>
+        </div>
+        <pre class="json-output"><code>{{ diffResult() }}</code></pre>
+    </div>
+    }
+</div>
