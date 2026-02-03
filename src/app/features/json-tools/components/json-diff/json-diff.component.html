@@ -13,10 +13,7 @@
                     [disabled]="!hasResults()" class="icon-toggle" title="Tree View">
                     <span>🌳</span>
                 </button>
-                <button [class.active]="viewMode() === 'graph'" (click)="hasResults() && toggleViewMode('graph')"
-                    [disabled]="!hasResults()" class="icon-toggle" title="Graph View">
-                    <span>🕸️</span>
-                </button>
+
                 <button [class.active]="viewMode() === 'raw'" (click)="hasResults() && toggleViewMode('raw')"
                     [disabled]="!hasResults()" class="icon-toggle" title="Raw Diff">
                     <span>📄</span>
@@ -113,58 +110,7 @@
         <pre class="diff-output"><code>{{ diffResult() }}</code></pre>
     </div>
     }
-    <!-- Graph View (Full Screen) -->
-    @else if (hasResults() && viewMode() === 'graph') {
-    <div class="graph-view-container">
-        <ngx-graph class="chart-container" [links]="graphEdges()" [nodes]="graphNodes()" [layout]="'dagre'"
-            [autoZoom]="true" [autoCenter]="true" [zoomLevel]="0.8" [showMiniMap]="true">
 
-            <ng-template #defsTemplate>
-                <svg:marker id="arrow" viewBox="0 -5 10 10" refX="8" refY="0" markerWidth="4" markerHeight="4"
-                    orient="auto">
-                    <svg:path d="M0,-5L10,0L0,5" class="arrow-head" />
-                </svg:marker>
-            </ng-template>
-
-            <ng-template #nodeTemplate let-node>
-                <svg:g class="node-card" [class]="node.data.diffType">
-                    <svg:rect rx="5" ry="5" width="200" height="auto" class="card-bg"></svg:rect>
-
-                    <svg:foreignObject width="200" height="100">
-                        <div class="node-content-html">
-                            <div class="node-header" [class.object]="node.data.isObject">
-                                <span class="key">{{ node.data.key || 'root' }}</span>
-                                <span class="type-badge">{{ node.data.type }}</span>
-                            </div>
-                            <div class="node-body">
-                                @if (!node.data.isObject) {
-                                <div class="value-row">
-                                    <span class="value">{{ node.data.value }}</span>
-                                </div>
-                                } @else {
-                                <div class="meta-row">
-                                    <span>{{ node.data.childCount }} items</span>
-                                </div>
-                                }
-                            </div>
-                        </div>
-                    </svg:foreignObject>
-                </svg:g>
-            </ng-template>
-
-            <ng-template #linkTemplate let-link>
-                <svg:g class="edge">
-                    <svg:path class="line" marker-end="url(#arrow)" [attr.d]="link.line"></svg:path>
-                    <svg:text class="edge-label" text-anchor="middle">
-                        <svg:textPath [attr.href]="'#' + link.id" startOffset="50%">
-                            {{link.label}}
-                        </svg:textPath>
-                    </svg:text>
-                </svg:g>
-            </ng-template>
-        </ngx-graph>
-    </div>
-    }
     @else {
     <!-- Main Comparison Area (For Split, Tree, and Edit modes) -->
     <div class="comparison-area">

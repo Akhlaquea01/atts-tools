@@ -1,10 +1,9 @@
 import { Component, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { NgxGraphModule, Node as GraphNode, Edge as GraphEdge } from '@swimlane/ngx-graph';
 import * as jsondiffpatch from 'jsondiffpatch';
 
-export type ViewMode = 'split' | 'tree' | 'raw' | 'graph';
+export type ViewMode = 'split' | 'tree' | 'raw';
 export type DiffType = 'added' | 'removed' | 'modified' | 'unchanged' | 'empty';
 
 interface JsonNode {
@@ -27,7 +26,7 @@ interface SearchResult {
 @Component({
     selector: 'app-json-diff',
     standalone: true,
-    imports: [CommonModule, FormsModule, NgxGraphModule],
+    imports: [CommonModule, FormsModule],
     templateUrl: './json-diff.component.html',
     styleUrl: './json-diff.component.css'
 })
@@ -52,9 +51,7 @@ export class JsonDiffComponent {
     leftTree = signal<JsonNode[]>([]);
     rightTree = signal<JsonNode[]>([]);
 
-    // Graph State
-    graphNodes = signal<GraphNode[]>([]);
-    graphEdges = signal<GraphEdge[]>([]);
+
 
     // UI State
     error = signal('');
@@ -121,12 +118,7 @@ export class JsonDiffComponent {
             this.rightTree.set(this.buildTreeWithDiff(left, right, delta, 'right'));
             this.computeVisualDiffs(left, right);
 
-            // Compute Graph (visualize the left side structure with diffs)
-            if (leftTree.length > 0) {
-                // Wrap in a root node if it's a list, or take the first
-                const root = leftTree.length === 1 ? leftTree[0] : { key: 'root', value: '', type: 'object', path: '', children: leftTree };
-                this.computeGraph(root);
-            }
+
 
             this.isEditing.set(false); // Switch to View Mode
 
@@ -721,50 +713,7 @@ export class JsonDiffComponent {
         this.rightDiffLines.set(rightResult);
     }
 
-    private computeGraph(rootNode: JsonNode) {
-        const nodes: GraphNode[] = [];
-        const edges: GraphEdge[] = [];
-        let nodeIdCounter = 0;
 
-        const traverse = (node: JsonNode, parentId?: string) => {
-            const id = `node-${nodeIdCounter++}`;
-            const label = node.key || 'root';
-
-            // Create Node
-            nodes.push({
-                id,
-                label,
-                data: {
-                    type: node.type,
-                    value: node.value,
-                    diffType: node.diffType,
-                    key: node.key,
-                    isObject: node.type === 'object' || node.type === 'array',
-                    childCount: node.children ? node.children.length : 0
-                }
-            });
-
-            // Create Edge from Parent
-            if (parentId) {
-                edges.push({
-                    id: `edge-${parentId}-${id}`,
-                    source: parentId,
-                    target: id,
-                    label: node.key
-                });
-            }
-
-            // Recurse
-            if (node.children) {
-                node.children.forEach(child => traverse(child, id));
-            }
-        };
-
-        traverse(rootNode);
-
-        this.graphNodes.set(nodes);
-        this.graphEdges.set(edges);
-    }
 
     toggleNode(node: JsonNode) {
         node.expanded = !node.expanded;
