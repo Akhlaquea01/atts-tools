@@ -176,7 +176,6 @@ export class SidebarComponent {
       children: [
         { icon: '✨', label: 'Formatter', route: '/json-tools/formatter' },
         { icon: '🔍', label: 'Diff Viewer', route: '/json-tools/diff' },
-        { icon: '✓', label: 'Validator', route: '/json-tools/validator' },
         { icon: '📊', label: 'CSV Converter', route: '/json-tools/csv-converter' }
       ]
     },
