@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CryptoService } from '../../services/crypto.service';
 import { HistoryService } from '../../../../core/services/history.service';
+import { ToastService } from '../../../../core/services/toast.service';
 
 @Component({
   selector: 'app-text-crypto',
@@ -105,15 +106,15 @@ import { HistoryService } from '../../../../core/services/history.service';
               <div class="result-section success">
                 <h3>✅ Encryption Successful</h3>
                 <div class="form-group">
-                  <label>Encrypted Data</label>
+                  <label>Encrypted Data (save this securely)</label>
                   <textarea
                     readonly
-                    [value]="encryptResult()!.encrypted"
-                    rows="4"
+                    [value]="encryptResult()!"
+                    rows="6"
                     class="w-full"
                   ></textarea>
                   <div class="flex gap-2 mt-1">
-                    <button class="btn btn-secondary" (click)="copyToClipboard(encryptResult()!.encrypted)">
+                    <button class="btn btn-secondary" (click)="copyToClipboard(encryptResult()!)">
                       📋 Copy Encrypted
                     </button>
                     <button class="btn btn-secondary" (click)="downloadEncrypted()">
@@ -121,16 +122,8 @@ import { HistoryService } from '../../../../core/services/history.service';
                     </button>
                   </div>
                 </div>
-                <div class="metadata">
-                  <div class="metadata-item">
-                    <strong>Salt:</strong> {{ encryptResult()!.salt }}
-                  </div>
-                  <div class="metadata-item">
-                    <strong>IV:</strong> {{ encryptResult()!.iv }}
-                  </div>
-                  <div class="metadata-item">
-                    <strong>Algorithm:</strong> AES-256-GCM
-                  </div>
+                <div class="info-box">
+                  <strong>ℹ️ Important:</strong> Save this encrypted text securely. You'll need it along with your password to decrypt later. The salt and IV are already embedded - no need to save them separately!
                 </div>
               </div>
             }
@@ -151,27 +144,6 @@ import { HistoryService } from '../../../../core/services/history.service';
               ></textarea>
             </div>
 
-            <div class="form-group">
-              <label for="salt">Salt</label>
-              <input
-                id="salt"
-                type="text"
-                [(ngModel)]="saltData"
-                placeholder="Enter salt value..."
-                class="w-full"
-              />
-            </div>
-
-            <div class="form-group">
-              <label for="iv">IV</label>
-              <input
-                id="iv"
-                type="text"
-                [(ngModel)]="ivData"
-                placeholder="Enter IV value..."
-                class="w-full"
-              />
-            </div>
 
             <div class="form-group">
               <label for="decrypt-password">Password</label>
@@ -201,7 +173,7 @@ import { HistoryService } from '../../../../core/services/history.service';
             <button
               class="btn btn-primary w-full"
               (click)="decrypt()"
-              [disabled]="!encryptedData || !saltData || !ivData || !decryptPassword || decrypting()"
+              [disabled]="!encryptedData || !decryptPassword || decrypting()"
             >
               @if (decrypting()) {
                 <span class="spinner"></span>
@@ -386,6 +358,16 @@ import { HistoryService } from '../../../../core/services/history.service';
       to { transform: rotate(360deg); }
     }
 
+    .info-box {
+      margin-top: 1rem;
+      padding: 1rem;
+      background: rgba(59, 130, 246, 0.1);
+      border: 1px solid rgba(59, 130, 246, 0.3);
+      border-radius: 0.375rem;
+      font-size: 0.875rem;
+      line-height: 1.5;
+    }
+
     @media (max-width: 640px) {
       .tool-header {
         flex-direction: column;
@@ -404,6 +386,7 @@ import { HistoryService } from '../../../../core/services/history.service';
 export class TextCryptoComponent {
   private cryptoService = inject(CryptoService);
   private historyService = inject(HistoryService);
+  private toastService = inject(ToastService);
 
   mode = signal<'encrypt' | 'decrypt'>('encrypt');
   showPassword = signal(false);
@@ -412,16 +395,17 @@ export class TextCryptoComponent {
   plaintext = '';
   encryptPassword = '';
   encrypting = signal(false);
-  encryptResult = signal<{ encrypted: string; salt: string; iv: string } | null>(null);
+  encryptResult = signal<string | null>(null);
 
   // Decrypt form
   encryptedData = '';
-  saltData = '';
-  ivData = '';
   decryptPassword = '';
   decrypting = signal(false);
   decryptResult = signal<string | null>(null);
   decryptError = signal<string | null>(null);
+
+  // Flag to prevent duplicate copy operations
+  private copying = false;
 
   togglePassword(): void {
     this.showPassword.update(v => !v);
@@ -439,14 +423,14 @@ export class TextCryptoComponent {
       this.historyService.addEntry('Text Crypto', 'Encrypted text', `${this.plaintext.length} characters`);
     } catch (error) {
       console.error('Encryption error:', error);
-      alert('Encryption failed. Please try again.');
+      this.toastService.error('Encryption failed. Please try again.');
     } finally {
       this.encrypting.set(false);
     }
   }
 
   async decrypt(): Promise<void> {
-    if (!this.encryptedData || !this.saltData || !this.ivData || !this.decryptPassword) return;
+    if (!this.encryptedData || !this.decryptPassword) return;
 
     this.decrypting.set(true);
     this.decryptResult.set(null);
@@ -455,8 +439,6 @@ export class TextCryptoComponent {
     try {
       const result = await this.cryptoService.decryptText(
         this.encryptedData,
-        this.saltData,
-        this.ivData,
         this.decryptPassword
       );
       this.decryptResult.set(result);
@@ -479,20 +461,33 @@ export class TextCryptoComponent {
   }
 
   async copyToClipboard(text: string): Promise<void> {
+    // Validate input
+    if (!text || !text.trim()) {
+      this.toastService.error('Nothing to copy');
+      return;
+    }
+
+    // Prevent duplicate calls
+    if (this.copying) return;
+
+    this.copying = true;
     try {
       await navigator.clipboard.writeText(text);
-      alert('Copied to clipboard!');
+      this.toastService.success('Copied to clipboard!');
     } catch (error) {
       console.error('Copy failed:', error);
+      this.toastService.error('Failed to copy to clipboard');
+    } finally {
+      // Reset flag after a short delay to allow rapid successive copies if needed
+      setTimeout(() => this.copying = false, 500);
     }
   }
 
   downloadEncrypted(): void {
-    const result = this.encryptResult();
-    if (!result) return;
+    const data = this.encryptResult();
+    if (!data) return;
 
-    const data = JSON.stringify(result, null, 2);
-    const blob = new Blob([data], { type: 'application/json' });
+    const blob = new Blob([data], { type: 'text/plain' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;

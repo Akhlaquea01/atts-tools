@@ -54,9 +54,10 @@ export class CryptoService {
 
     /**
      * Encrypt text using AES-256-GCM
-     * Returns base64-encoded encrypted data and salt
+     * Returns a single base64-encoded string containing: [salt][iv][encrypted data]
+     * User only needs to remember the password - salt and IV are embedded
      */
-    async encryptText(plaintext: string, password: string): Promise<{ encrypted: string; salt: string; iv: string }> {
+    async encryptText(plaintext: string, password: string): Promise<string> {
         const encoder = new TextEncoder();
         const data = encoder.encode(plaintext);
 
@@ -74,30 +75,37 @@ export class CryptoService {
             data
         );
 
+        // Combine salt + IV + encrypted data into a single buffer
+        const combined = new Uint8Array(this.SALT_LENGTH + this.IV_LENGTH + encryptedBuffer.byteLength);
+        combined.set(salt, 0);
+        combined.set(iv, this.SALT_LENGTH);
+        combined.set(new Uint8Array(encryptedBuffer), this.SALT_LENGTH + this.IV_LENGTH);
+
         // Convert to base64 for easy storage/transmission
-        return {
-            encrypted: this.arrayBufferToBase64(encryptedBuffer),
-            salt: this.arrayBufferToBase64(salt.buffer),
-            iv: this.arrayBufferToBase64(iv.buffer)
-        };
+        return this.arrayBufferToBase64(combined.buffer);
     }
 
     /**
      * Decrypt text using AES-256-GCM
+     * Automatically extracts salt and IV from the encrypted string
      */
-    async decryptText(encryptedBase64: string, saltBase64: string, ivBase64: string, password: string): Promise<string> {
+    async decryptText(encryptedBase64: string, password: string): Promise<string> {
         try {
             // Convert from base64
-            const encrypted = this.base64ToArrayBuffer(encryptedBase64);
-            const salt = this.base64ToArrayBuffer(saltBase64);
-            const iv = this.base64ToArrayBuffer(ivBase64);
+            const combined = this.base64ToArrayBuffer(encryptedBase64);
+            const combinedArray = new Uint8Array(combined);
+
+            // Extract salt, IV, and encrypted data
+            const salt = combinedArray.slice(0, this.SALT_LENGTH);
+            const iv = combinedArray.slice(this.SALT_LENGTH, this.SALT_LENGTH + this.IV_LENGTH);
+            const encrypted = combinedArray.slice(this.SALT_LENGTH + this.IV_LENGTH);
 
             // Derive key from password
-            const key = await this.deriveKey(password, new Uint8Array(salt));
+            const key = await this.deriveKey(password, salt);
 
             // Decrypt data
             const decryptedBuffer = await crypto.subtle.decrypt(
-                { name: 'AES-GCM', iv: new Uint8Array(iv) },
+                { name: 'AES-GCM', iv: iv },
                 key,
                 encrypted
             );
