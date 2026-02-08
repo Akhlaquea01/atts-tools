@@ -1,0 +1,30 @@
+<div class="viewer-container">
+  <div class="sidebar-panel">
+    <div class="toolbar">
+      <button class="btn" (click)="loadSample()">Load Sample</button>
+      <button class="btn btn-secondary" (click)="clear()">Clear</button>
+    </div>
+
+    <div class="editor-wrapper">
+      <textarea
+        [ngModel]="inputJson()"
+        (ngModelChange)="onInputChange($event)"
+        placeholder="Paste JSON here..."
+        class="json-input"
+        spellcheck="false"
+      ></textarea>
+    </div>
+
+    <div class="status-bar" [class.error]="error()">
+      @if (error()) {
+        {{ error() }}
+      } @else {
+        Ready
+      }
+    </div>
+  </div>
+
+  <div class="graph-panel">
+    <div #reactRoot class="react-container"></div>
+  </div>
+</div>

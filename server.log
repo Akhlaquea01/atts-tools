@@ -1,0 +1,39 @@
+
+> angular-toolbox@0.0.0 start
+> ng serve
+
+❯ Building...
+✔ Building...
+Initial chunk files | Names                        |  Raw size
+main.js             | main                         |  47.77 kB |
+styles.css          | styles                       |   6.18 kB |
+chunk-ACEDRJSB.js   | -                            |   2.25 kB |
+chunk-6W5KR3TI.js   | -                            |   1.97 kB |
+chunk-VUJOFXKG.js   | -                            | 938 bytes |
+
+                    | Initial total                |  59.11 kB
+
+Lazy chunk files    | Names                        |  Raw size
+chunk-SFAIBPYW.js   | json-diff-component          | 105.61 kB |
+chunk-OMFO4RCM.js   | file-vault-component         |  49.28 kB |
+chunk-5RFNF3SR.js   | text-crypto-component        |  46.52 kB |
+chunk-M54LFKIU.js   | password-generator-component |  24.95 kB |
+chunk-KWZTMTWB.js   | json-graph-viewer-component  |  23.12 kB |
+chunk-ZXCKPEXX.js   | json-to-csv-component        |  22.48 kB |
+chunk-YVHCYUMY.js   | json-formatter-component     |  21.53 kB |
+chunk-ARPJ4AMI.js   | regex-tester-component       |  20.17 kB |
+chunk-OHULLVFX.js   | uuid-generator-component     |  19.49 kB |
+chunk-H5AIPM2F.js   | lorem-ipsum-component        |  15.97 kB |
+chunk-SLTJYIE6.js   | text-diff-component          |  15.87 kB |
+chunk-SHAN3JVG.js   | json-viewer-component        |  13.98 kB |
+chunk-72U7VA6S.js   | word-counter-component       |  13.75 kB |
+chunk-LKRCUIX3.js   | case-converter-component     |  13.24 kB |
+chunk-J44RM6NJ.js   | settings-component           |   6.83 kB |
+...and 6 more lazy chunks files. Use "--verbose" to show all the files.
+
+Application bundle generation complete. [5.721 seconds] - 2026-02-08T12:09:45.497Z
+
+Watch mode enabled. Watching for file changes...
+NOTE: Raw file sizes do not reflect development server per-request transformations.
+Cannot optimize dependency: @xyflow/react/dist/style.css, present in client 'optimizeDeps.include'
+  ➜  Local:   http://localhost:4200/
