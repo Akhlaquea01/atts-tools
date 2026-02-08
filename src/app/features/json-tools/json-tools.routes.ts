@@ -20,10 +20,6 @@ export const JSON_TOOLS_ROUTES: Routes = [
   },
   {
     path: 'viewer',
-    loadComponent: () => import('./components/json-viewer/json-viewer.component').then(m => m.JsonViewerComponent)
-  },
-  {
-    path: 'graph-viewer',
     loadComponent: () => import('./components/json-graph-viewer/json-graph-viewer.component').then(m => m.JsonGraphViewerComponent)
   }
 ];

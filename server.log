@@ -5,13 +5,13 @@
 ❯ Building...
 ✔ Building...
 Initial chunk files | Names                        |  Raw size
-main.js             | main                         |  47.77 kB |
+main.js             | main                         |  47.68 kB |
 styles.css          | styles                       |   6.18 kB |
 chunk-ACEDRJSB.js   | -                            |   2.25 kB |
 chunk-6W5KR3TI.js   | -                            |   1.97 kB |
 chunk-VUJOFXKG.js   | -                            | 938 bytes |
 
-                    | Initial total                |  59.11 kB
+                    | Initial total                |  59.02 kB
 
 Lazy chunk files    | Names                        |  Raw size
 chunk-SFAIBPYW.js   | json-diff-component          | 105.61 kB |
@@ -25,15 +25,16 @@ chunk-ARPJ4AMI.js   | regex-tester-component       |  20.17 kB |
 chunk-OHULLVFX.js   | uuid-generator-component     |  19.49 kB |
 chunk-H5AIPM2F.js   | lorem-ipsum-component        |  15.97 kB |
 chunk-SLTJYIE6.js   | text-diff-component          |  15.87 kB |
-chunk-SHAN3JVG.js   | json-viewer-component        |  13.98 kB |
 chunk-72U7VA6S.js   | word-counter-component       |  13.75 kB |
 chunk-LKRCUIX3.js   | case-converter-component     |  13.24 kB |
 chunk-J44RM6NJ.js   | settings-component           |   6.83 kB |
-...and 6 more lazy chunks files. Use "--verbose" to show all the files.
+chunk-GGRZJSAX.js   | file-crypto-component        |   3.60 kB |
+...and 5 more lazy chunks files. Use "--verbose" to show all the files.
 
-Application bundle generation complete. [5.721 seconds] - 2026-02-08T12:09:45.497Z
+Application bundle generation complete. [9.400 seconds] - 2026-02-08T12:42:43.890Z
 
 Watch mode enabled. Watching for file changes...
 NOTE: Raw file sizes do not reflect development server per-request transformations.
+12:42:44 PM [vite] (client) Re-optimizing dependencies because lockfile has changed
 Cannot optimize dependency: @xyflow/react/dist/style.css, present in client 'optimizeDeps.include'
   ➜  Local:   http://localhost:4200/

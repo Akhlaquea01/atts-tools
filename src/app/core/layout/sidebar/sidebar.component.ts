@@ -213,8 +213,7 @@ export class SidebarComponent {
         { icon: '✨', label: 'Formatter', route: '/json-tools/formatter' },
         { icon: '🔍', label: 'Diff Viewer', route: '/json-tools/diff' },
         { icon: '📊', label: 'CSV Converter', route: '/json-tools/csv-converter' },
-        { icon: '👀', label: 'JSON Viewer', route: '/json-tools/viewer' },
-        { icon: '🕸️', label: 'JSON Viewer', route: '/json-tools/graph-viewer' }
+        { icon: '👀', label: 'JSON Viewer', route: '/json-tools/viewer' }
       ]
     },
     { icon: '📄', label: 'Text Tools', route: '/text-tools' },
