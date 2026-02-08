@@ -54,7 +54,8 @@ interface NavItem {
       width: 250px;
       height: calc(100vh - 60px);
       overflow-y: auto;
-      transition: transform 0.3s ease;
+      transition: all 0.3s ease;
+      flex-shrink: 0;
     }
 
     .sidebar.collapsed {
@@ -136,11 +137,18 @@ interface NavItem {
       font-size: 1rem;
     }
 
-    /* Desktop: Sticky sidebar */
+    /* Desktop: Sticky sidebar with collapse animation */
     @media (min-width: 769px) {
       .sidebar {
         position: sticky;
         top: 60px;
+      }
+
+      .sidebar.collapsed {
+        width: 0;
+        border-right: none;
+        overflow: hidden;
+        visibility: hidden;
       }
     }
 
@@ -213,8 +221,7 @@ export class SidebarComponent {
         { icon: '✨', label: 'Formatter', route: '/json-tools/formatter' },
         { icon: '🔍', label: 'Diff Viewer', route: '/json-tools/diff' },
         { icon: '📊', label: 'CSV Converter', route: '/json-tools/csv-converter' },
-        { icon: '👀', label: 'JSON Viewer', route: '/json-tools/viewer' },
-        { icon: '🕸️', label: 'JSON Viewer', route: '/json-tools/graph-viewer' }
+        { icon: '🕸️', label: 'Graph Viewer', route: '/json-tools/graph-viewer' }
       ]
     },
     { icon: '📄', label: 'Text Tools', route: '/text-tools' },
