@@ -53,8 +53,6 @@ interface NavItem {
       border-right: 1px solid var(--border);
       width: 250px;
       height: calc(100vh - 60px);
-      position: sticky;
-      top: 60px;
       overflow-y: auto;
       transition: transform 0.3s ease;
     }
@@ -98,6 +96,7 @@ interface NavItem {
       font-size: 1.25rem;
       width: 24px;
       text-align: center;
+      flex-shrink: 0;
     }
 
     .nav-label {
@@ -137,11 +136,48 @@ interface NavItem {
       font-size: 1rem;
     }
 
+    /* Desktop: Sticky sidebar */
+    @media (min-width: 769px) {
+      .sidebar {
+        position: sticky;
+        top: 60px;
+      }
+    }
+
+    /* Mobile: Fixed sidebar with overlay */
     @media (max-width: 768px) {
       .sidebar {
         position: fixed;
+        top: 60px;
+        left: 0;
+        bottom: 0;
         z-index: 50;
+        height: calc(100vh - 60px);
         box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
+      }
+    }
+
+    /* Tablet adjustments */
+    @media (max-width: 1024px) {
+      .sidebar {
+        width: 220px;
+      }
+
+      .nav-item, .nav-child-item {
+        padding-left: 1rem;
+        padding-right: 1rem;
+      }
+
+      .nav-children {
+        margin-left: 1rem;
+      }
+    }
+
+    /* Small mobile screens */
+    @media (max-width: 480px) {
+      .sidebar {
+        width: 280px;
+        max-width: 80vw;
       }
     }
 

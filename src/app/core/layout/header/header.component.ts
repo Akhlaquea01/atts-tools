@@ -3,10 +3,10 @@ import { CommonModule } from '@angular/common';
 import { ThemeService } from '../../services/theme.service';
 
 @Component({
-    selector: 'app-header',
-    standalone: true,
-    imports: [CommonModule],
-    template: `
+  selector: 'app-header',
+  standalone: true,
+  imports: [CommonModule],
+  template: `
     <header class="app-header">
       <div class="header-content">
         <div class="header-left">
@@ -58,7 +58,7 @@ import { ThemeService } from '../../services/theme.service';
       </div>
     </header>
   `,
-    styles: [`
+  styles: [`
     .app-header {
       background: var(--surface);
       border-bottom: 1px solid var(--border);
@@ -80,6 +80,7 @@ import { ThemeService } from '../../services/theme.service';
       display: flex;
       align-items: center;
       gap: 1rem;
+      min-width: 0; /* Allow text truncation */
     }
 
     .menu-toggle {
@@ -90,6 +91,7 @@ import { ThemeService } from '../../services/theme.service';
       color: var(--text);
       border-radius: 0.375rem;
       transition: background-color 0.2s;
+      flex-shrink: 0;
     }
 
     .menu-toggle:hover {
@@ -104,16 +106,19 @@ import { ThemeService } from '../../services/theme.service';
       display: flex;
       align-items: center;
       gap: 0.5rem;
+      white-space: nowrap;
     }
 
     .title-icon {
       font-size: 1.5rem;
+      flex-shrink: 0;
     }
 
     .header-right {
       display: flex;
       align-items: center;
       gap: 1rem;
+      flex-shrink: 0;
     }
 
     .privacy-badge {
@@ -128,6 +133,10 @@ import { ThemeService } from '../../services/theme.service';
       font-weight: 500;
     }
 
+    .privacy-badge svg {
+      flex-shrink: 0;
+    }
+
     .theme-toggle {
       background: none;
       border: none;
@@ -139,26 +148,70 @@ import { ThemeService } from '../../services/theme.service';
       display: flex;
       align-items: center;
       justify-content: center;
+      flex-shrink: 0;
     }
 
     .theme-toggle:hover {
       background: var(--hover);
     }
 
+    /* Tablet and below */
+    @media (max-width: 768px) {
+      .header-content {
+        padding: 0.75rem 1rem;
+      }
+
+      .header-left {
+        gap: 0.75rem;
+      }
+
+      .header-right {
+        gap: 0.5rem;
+      }
+    }
+
+    /* Small mobile screens */
     @media (max-width: 640px) {
+      .header-content {
+        padding: 0.5rem 0.75rem;
+      }
+
+      .header-left {
+        gap: 0.5rem;
+      }
+
       .privacy-badge span {
         display: none;
+      }
+
+      .privacy-badge {
+        padding: 0.5rem;
       }
 
       .app-title {
         font-size: 1rem;
       }
+
+      .title-icon {
+        font-size: 1.25rem;
+      }
+    }
+
+    /* Very small screens */
+    @media (max-width: 400px) {
+      .app-title {
+        font-size: 0.9rem;
+      }
+
+      .menu-toggle, .theme-toggle {
+        padding: 0.375rem;
+      }
     }
   `]
 })
 export class HeaderComponent {
-    themeService = inject(ThemeService);
-    toggleSidebar = output<void>();
+  themeService = inject(ThemeService);
+  toggleSidebar = output<void>();
 }
 
 // Add this import at the top
