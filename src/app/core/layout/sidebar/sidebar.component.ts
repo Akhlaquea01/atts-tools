@@ -212,7 +212,8 @@ export class SidebarComponent {
       children: [
         { icon: '✨', label: 'Formatter', route: '/json-tools/formatter' },
         { icon: '🔍', label: 'Diff Viewer', route: '/json-tools/diff' },
-        { icon: '📊', label: 'CSV Converter', route: '/json-tools/csv-converter' }
+        { icon: '📊', label: 'CSV Converter', route: '/json-tools/csv-converter' },
+        { icon: '👀', label: 'JSON Viewer', route: '/json-tools/viewer' }
       ]
     },
     { icon: '📄', label: 'Text Tools', route: '/text-tools' },

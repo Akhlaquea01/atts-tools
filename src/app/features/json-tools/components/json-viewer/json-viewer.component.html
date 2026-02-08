@@ -1,0 +1,35 @@
+<div class="tool-container">
+  <h2>👀 JSON Viewer</h2>
+
+  <div class="editor-section">
+    <div class="editor-header">
+      <h3>Input JSON</h3>
+      <div class="button-group">
+        <button (click)="loadSample()" class="btn-secondary">Load Sample</button>
+        <button (click)="clear()" class="btn-secondary">Clear</button>
+      </div>
+    </div>
+    <textarea
+      [(ngModel)]="inputJson"
+      (ngModelChange)="onInputChange()"
+      placeholder="Paste your JSON here..."
+      class="json-editor"
+      rows="10"
+    ></textarea>
+  </div>
+
+  @if (error()) {
+    <div class="error-message">
+      {{ error() }}
+    </div>
+  }
+
+  @if (parsedJson) {
+    <div class="viewer-section">
+      <h3>Tree View</h3>
+      <div class="json-viewer-container">
+        <ngx-json-viewer [json]="parsedJson"></ngx-json-viewer>
+      </div>
+    </div>
+  }
+</div>

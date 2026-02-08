@@ -17,6 +17,10 @@ export const JSON_TOOLS_ROUTES: Routes = [
   {
     path: 'diff',
     loadComponent: () => import('./components/json-diff/json-diff.component').then(m => m.JsonDiffComponent)
+  },
+  {
+    path: 'viewer',
+    loadComponent: () => import('./components/json-viewer/json-viewer.component').then(m => m.JsonViewerComponent)
   }
 ];
 
