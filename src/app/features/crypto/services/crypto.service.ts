@@ -182,16 +182,26 @@ export class CryptoService {
     ): AsyncGenerator<Uint8Array> {
         const reader = file.stream().getReader();
 
-        // Read header (salt + file size)
+        // Read header (salt + file size), carefully preserving any extra bytes
+        // that arrived in the same read() call beyond the header boundary.
         const headerSize = this.SALT_LENGTH + 8;
         const headerBuffer = new Uint8Array(headerSize);
         let headerOffset = 0;
+        let leftover = new Uint8Array(0); // bytes read beyond the header
 
         while (headerOffset < headerSize) {
             const { value, done } = await reader.read();
             if (done) throw new Error('Unexpected end of file');
-            headerBuffer.set(value.slice(0, headerSize - headerOffset), headerOffset);
-            headerOffset += Math.min(value.length, headerSize - headerOffset);
+            const needed = headerSize - headerOffset;
+            if (value.length <= needed) {
+                headerBuffer.set(value, headerOffset);
+                headerOffset += value.length;
+            } else {
+                // Fill rest of header and keep the remainder
+                headerBuffer.set(value.slice(0, needed), headerOffset);
+                headerOffset += needed;
+                leftover = value.slice(needed); // ← this was the bug: previously discarded
+            }
         }
 
         const salt = headerBuffer.slice(0, this.SALT_LENGTH);
@@ -204,19 +214,12 @@ export class CryptoService {
         const totalSize = fileSizeHigh * 0x100000000 + fileSizeLow;
 
         let processedBytes = 0;
-        let buffer = new Uint8Array(0);
+        // Seed the chunk buffer with any leftover bytes from header reading
+        let buffer = leftover;
 
         while (true) {
-            const { value, done } = await reader.read();
-            if (done) break;
-
-            // Append to buffer
-            const newBuffer = new Uint8Array(buffer.length + value.length);
-            newBuffer.set(buffer);
-            newBuffer.set(value, buffer.length);
-            buffer = newBuffer;
-
-            // Process complete chunks
+            // Process any complete chunks already in the buffer before reading more
+            let processed = false;
             while (buffer.length >= this.IV_LENGTH + 4) {
                 const iv = buffer.slice(0, this.IV_LENGTH);
                 const chunkLengthView = new DataView(buffer.buffer, buffer.byteOffset + this.IV_LENGTH, 4);
@@ -245,7 +248,44 @@ export class CryptoService {
                 }
 
                 buffer = buffer.slice(totalChunkSize);
+                processed = true;
             }
+
+            // Read more data from the stream
+            const { value, done } = await reader.read();
+            if (done) break;
+
+            // Append new data to the buffer
+            const newBuffer = new Uint8Array(buffer.length + value.length);
+            newBuffer.set(buffer);
+            newBuffer.set(value, buffer.length);
+            buffer = newBuffer;
+        }
+
+        // Drain any remaining buffered chunks after stream ends
+        while (buffer.length >= this.IV_LENGTH + 4) {
+            const iv = buffer.slice(0, this.IV_LENGTH);
+            const chunkLengthView = new DataView(buffer.buffer, buffer.byteOffset + this.IV_LENGTH, 4);
+            const chunkLength = chunkLengthView.getUint32(0, false);
+            const totalChunkSize = this.IV_LENGTH + 4 + chunkLength;
+            if (buffer.length < totalChunkSize) break;
+
+            const encryptedChunk = buffer.slice(this.IV_LENGTH + 4, totalChunkSize);
+            try {
+                const decryptedChunk = await crypto.subtle.decrypt(
+                    { name: 'AES-GCM', iv: iv },
+                    key,
+                    encryptedChunk
+                );
+                yield new Uint8Array(decryptedChunk);
+                processedBytes += decryptedChunk.byteLength;
+                if (onProgress && totalSize > 0) {
+                    onProgress((processedBytes / totalSize) * 100);
+                }
+            } catch (error) {
+                throw new Error('Decryption failed. Invalid password or corrupted file.');
+            }
+            buffer = buffer.slice(totalChunkSize);
         }
     }
 
