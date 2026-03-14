@@ -295,6 +295,42 @@ h2 {
     color: var(--text);
 }
 
+/* Progress bar */
+.progress-wrap {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-top: 1.25rem;
+}
+
+.progress-bar {
+    flex: 1;
+    height: 10px;
+    background: var(--border, #e5e7eb);
+    border-radius: 999px;
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    background: var(--primary, #6366f1);
+    border-radius: 999px;
+    transition: width 0.3s ease;
+}
+
+.progress-label {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--primary, #6366f1);
+    min-width: 3rem;
+    text-align: right;
+}
+
+.small {
+    font-size: 0.8rem;
+    margin-top: 0.75rem;
+}
+
 @media (max-width: 768px) {
     .vault-container {
         padding: 1rem;

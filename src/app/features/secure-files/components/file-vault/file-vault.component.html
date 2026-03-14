@@ -1,13 +1,13 @@
 <div class="vault-container">
     <h2>🔒 Secure File Vault</h2>
-    <p class="subtitle">Encrypt and protect your files with password-based AES-256 encryption</p>
+    <p class="subtitle">Encrypt and protect files of any size with AES-256-GCM — processed entirely in your browser</p>
 
     <div class="mode-tabs">
         <button [class.active]="mode() === 'encrypt'" (click)="mode.set('encrypt')" class="tab-btn">
-            🔐 Encrypt & Protect
+            🔐 Encrypt &amp; Protect
         </button>
         <button [class.active]="mode() === 'decrypt'" (click)="mode.set('decrypt')" class="tab-btn">
-            🔓 Decrypt & Restore
+            🔓 Decrypt &amp; Restore
         </button>
     </div>
 
@@ -37,7 +37,7 @@
                     <div class="upload-placeholder">
                         <div class="upload-icon">📁</div>
                         <p><strong>Click to browse</strong> or drag and drop</p>
-                        <p class="text-muted">Any file type supported</p>
+                        <p class="text-muted">Any file type, any size — streaming supported</p>
                     </div>
                     }
                 </label>
@@ -46,26 +46,18 @@
 
         @if (selectedFile()) {
         <div class="section">
-            <h3>2. Compression</h3>
-            <label class="checkbox-label">
-                <input type="checkbox" [(ngModel)]="useCompression">
-                <span>Compress file before encryption (recommended for large files)</span>
-            </label>
-        </div>
-
-        <div class="section">
-            <h3>3. Set Password</h3>
+            <h3>2. Set Password</h3>
             <div class="password-inputs">
                 <input type="password" [(ngModel)]="password" placeholder="Enter password (min 6 characters)"
                     class="password-input">
                 <input type="password" [(ngModel)]="confirmPassword" placeholder="Confirm password"
                     class="password-input">
             </div>
-            <p class="password-hint">⚠️ Remember this password - it cannot be recovered!</p>
+            <p class="password-hint">⚠️ Remember this password — it cannot be recovered!</p>
         </div>
 
         <div class="actions">
-            <button (click)="encryptFile()" [disabled]="encrypting() || !password() || !confirmPassword()"
+            <button (click)="encryptFile()" [disabled]="encrypting() || !password || !confirmPassword"
                 class="btn-primary">
                 @if (encrypting()) {
                 ⏳ Encrypting...
@@ -76,7 +68,16 @@
             <button (click)="clearEncrypt()" class="btn-secondary">Clear</button>
         </div>
 
-        @if (encryptedData()) {
+        @if (encrypting()) {
+        <div class="progress-wrap">
+            <div class="progress-bar">
+                <div class="progress-fill" [style.width.%]="encryptProgress()"></div>
+            </div>
+            <span class="progress-label">{{ encryptProgress() | number:'1.0-0' }}%</span>
+        </div>
+        }
+
+        @if (encryptDone()) {
         <div class="result">
             <h3>✅ Encryption Successful!</h3>
             <div class="stats-grid">
@@ -88,16 +89,11 @@
                     <div class="stat-label">Encrypted Size</div>
                     <div class="stat-value">{{ formatSize(processedSize()) }}</div>
                 </div>
-                @if (useCompression()) {
-                <div class="stat">
-                    <div class="stat-label">Saved</div>
-                    <div class="stat-value">{{ getCompressionRatio() }}%</div>
-                </div>
-                }
             </div>
-            <button (click)="downloadEncrypted()" class="btn-download">
-                💾 Download Encrypted File (.secure)
-            </button>
+            @if (!hasFSA) {
+            <p class="text-muted small">💡 File was downloaded automatically. Use a modern browser (Chrome/Edge) for
+                save-dialog streaming on very large files.</p>
+            }
         </div>
         }
         }
@@ -125,7 +121,7 @@
                     <div class="upload-placeholder">
                         <div class="upload-icon">🔒</div>
                         <p><strong>Click to browse</strong> or drag and drop</p>
-                        <p class="text-muted">Select .secure file to decrypt</p>
+                        <p class="text-muted">Select a .secure file to decrypt</p>
                     </div>
                     }
                 </label>
@@ -140,7 +136,7 @@
         </div>
 
         <div class="actions">
-            <button (click)="decryptFile()" [disabled]="decrypting() || !decryptPassword()" class="btn-primary">
+            <button (click)="decryptFile()" [disabled]="decrypting() || !decryptPassword" class="btn-primary">
                 @if (decrypting()) {
                 ⏳ Decrypting...
                 } @else {
@@ -150,12 +146,21 @@
             <button (click)="clearDecrypt()" class="btn-secondary">Clear</button>
         </div>
 
-        @if (decryptedData()) {
+        @if (decrypting()) {
+        <div class="progress-wrap">
+            <div class="progress-bar">
+                <div class="progress-fill" [style.width.%]="decryptProgress()"></div>
+            </div>
+            <span class="progress-label">{{ decryptProgress() | number:'1.0-0' }}%</span>
+        </div>
+        }
+
+        @if (decryptDone()) {
         <div class="result success">
             <h3>✅ Decryption Successful!</h3>
             <div class="stats-grid">
                 <div class="stat">
-                    <div class="stat-label">Original Filename</div>
+                    <div class="stat-label">Restored File</div>
                     <div class="stat-value filename">{{ decryptedFilename() }}</div>
                 </div>
                 <div class="stat">
@@ -163,9 +168,10 @@
                     <div class="stat-value">{{ formatSize(processedSize()) }}</div>
                 </div>
             </div>
-            <button (click)="downloadDecrypted()" class="btn-download">
-                💾 Download Original File
-            </button>
+            @if (!hasFSA) {
+            <p class="text-muted small">💡 File was downloaded automatically. Use a modern browser (Chrome/Edge) for
+                save-dialog streaming on very large files.</p>
+            }
         </div>
         }
         }
@@ -175,10 +181,10 @@
     <div class="info-panel">
         <h4>ℹ️ How It Works</h4>
         <ul>
-            <li><strong>Encryption:</strong> Uses AES-256 encryption standard</li>
-            <li><strong>Compression:</strong> Optional gzip compression to reduce file size</li>
-            <li><strong>Privacy:</strong> All processing happens in your browser - no uploads</li>
-            <li><strong>Security:</strong> Only you have the password - keep it safe!</li>
+            <li><strong>Streaming:</strong> Files are processed in 64 MB chunks — no memory crash on large files</li>
+            <li><strong>Encryption:</strong> AES-256-GCM with unique IV per chunk and PBKDF2 key derivation</li>
+            <li><strong>Privacy:</strong> All processing happens in your browser — nothing is uploaded</li>
+            <li><strong>Security:</strong> Only you have the password — it cannot be recovered!</li>
         </ul>
     </div>
 </div>
